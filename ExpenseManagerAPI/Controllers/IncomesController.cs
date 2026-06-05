@@ -1,12 +1,14 @@
 ﻿using ExpenseManagerAPI.DataAccess.Repositories;
 using ExpenseManagerAPI.Dtos;
 using ExpenseManagerAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseManagerAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class IncomesController : ControllerBase
     {
         private readonly IIncomeRepository _incomeRepository;

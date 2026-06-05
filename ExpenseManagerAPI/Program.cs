@@ -1,8 +1,10 @@
 using ExpenseManagerAPI.Data;
 using ExpenseManagerAPI.DataAccess.Models;
 using ExpenseManagerAPI.DataAccess.Repositories;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +36,24 @@ builder.Services.AddCors(options =>
         });
 });
 
+var secretKey = builder.Configuration.GetSection("AppSettings:TokenSecretKey").Value;
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? "SuperSecretDefaultFallbackKeyLongerThan32Bytes")),
+        ValidateIssuer = false, 
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -46,6 +66,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(myAllowSpecificOrigins);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -80,7 +101,7 @@ using (var scope = app.Services.CreateScope())
             {
                 UserName = "umar",
                 Email = "umar@test.com",
-                PasswordHash = "secure_hash"
+                PasswordHash = "123456"
             });
             context.SaveChanges();
         }
@@ -92,7 +113,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// app.Run() should be immediately below this
-app.Run();
+
 
 app.Run();

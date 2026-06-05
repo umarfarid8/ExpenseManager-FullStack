@@ -1,12 +1,15 @@
 ﻿using ExpenseManagerAPI.DataAccess.Models;
 using ExpenseManagerAPI.DataAccess.Repositories;
 using ExpenseManagerAPI.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ExpenseManagerAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ExpensesController : Controller
     {
         private readonly IExpenseRepository _expenseRepository;
@@ -78,6 +81,16 @@ namespace ExpenseManagerAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return Unauthorized(new { message = "User identity could not be verified from token." });
+            }
+
+            int authenticatedUserId = int.Parse(userIdClaim);
+
             var expense = new Expense
             {
                 Title = dto.Title,
@@ -85,7 +98,7 @@ namespace ExpenseManagerAPI.Controllers
                 Description = dto.Description,
                 Date = dto.Date,
                 CategoryId = dto.CategoryId,
-                UserId = dto.UserId
+                UserId = authenticatedUserId
             };
             await _expenseRepository.AddAsync(expense);
             await _expenseRepository.SaveChangesAsync();

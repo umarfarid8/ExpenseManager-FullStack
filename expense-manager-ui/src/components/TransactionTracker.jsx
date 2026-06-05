@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { expenseService, incomeService } from '../services/transactionService';
+import { authService } from '../services/authService';
 
 const TransactionTracker = ({ type = 'expense', onAddNewClick }) => {
   const isExpense = type === 'expense';
-  const userId = 1; // Maps directly to our backend seed user
+  
+  // FIXED: Dynamic extraction of the authenticated active user ID
+  const currentUser = authService.getCurrentUser();
+  const userId = currentUser ? currentUser.userId : 1; 
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);

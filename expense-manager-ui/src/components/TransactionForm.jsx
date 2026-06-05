@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { categoryService, expenseService, incomeService } from '../services/transactionService';
+import { authService } from '../services/authService';
 
 const TransactionForm = ({ type = 'expense', onTransactionSaved, onCancel }) => {
   const isExpense = type === 'expense';
@@ -28,28 +29,29 @@ const TransactionForm = ({ type = 'expense', onTransactionSaved, onCancel }) => 
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMessage('');
+  e.preventDefault();
+  setErrorMessage('');
 
-    // Field Validation Checks
-    if (!categoryId) {
-      setErrorMessage('Please select a valid category.');
-      return;
-    }
-    if (parseFloat(amount) <= 0) {
-      setErrorMessage('Amount must be greater than zero.');
-      return;
-    }
+  if (!categoryId) {
+    setErrorMessage('Please select a valid category.');
+    return;
+  }
+  if (parseFloat(amount) <= 0) {
+    setErrorMessage('Amount must be greater than zero.');
+    return;
+  }
 
-    // Match the exact DTO payloads expected by our ASP.NET controllers
-    const payload = {
-      title: description || (isExpense ? "Logged Expense" : "Logged Income"),
-      amount: parseFloat(amount),
-      description: description,
-      date: new Date(date).toISOString(),
-      categoryId: parseInt(categoryId),
-      userId: 1 // hardcoded to map with our backend seed user ID
-    };
+  // Fetch the live logged-in user details dynamically
+  const currentUser = authService.getCurrentUser();
+
+  const payload = {
+    title: description || (isExpense ? "Logged Expense" : "Logged Income"),
+    amount: parseFloat(amount),
+    description: description,
+    date: new Date(date).toISOString(),
+    categoryId: parseInt(categoryId),
+    userId: currentUser ? currentUser.userId : 1 // FIXED: No longer hardcoded to 1!
+  };
 
     try {
       if (isExpense) {
