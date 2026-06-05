@@ -1,0 +1,18 @@
+## === .NET Core Backend (ExpenseManagerAPI) ===
+ExpenseManagerAPI/bin/
+ExpenseManagerAPI/obj/
+.vs/
+.vscode/
+appsettings.Development.json
+*.user
+*.suo
+
+## === React Frontend (expense-manager-ui) ===
+expense-manager-ui/node_modules/
+expense-manager-ui/dist/
+expense-manager-ui/dist-ssr
+*.local
+
+## === OS Specific ===
+.DS_Store
+Thumbs.db
